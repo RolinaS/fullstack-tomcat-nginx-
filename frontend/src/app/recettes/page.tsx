@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import type { Page, Recette } from "@/lib/types";
 
-type Recette = { id:number; nom:string; utilisateurId?:number; utilisateurNomComplet?:string|null; typeRepasId?:number; typeRepasNom?:string|null; };
-type Page<T> = { content: T[] };
+type RecetteForm = { nom: string; utilisateurId: string; typeRepasId: string; };
 
 export default function RecettesPage(){
   const [list,setList]=useState<Recette[]>([]);
-  const [form,setForm]=useState<any>({ nom:"", utilisateurId:"", typeRepasId:"" });
+  const [form,setForm]=useState<RecetteForm>({ nom:"", utilisateurId:"", typeRepasId:"" });
 
   const load = async ()=>{
     const data = await api<Page<Recette>>("/api/recettes");
@@ -18,17 +18,21 @@ export default function RecettesPage(){
 
   const submit = async (e:React.FormEvent)=>{
     e.preventDefault();
-    await api<Recette>("/api/recettes", {
-      method:"POST",
-      body: JSON.stringify({
-        nom: form.nom,
-        utilisateurId: form.utilisateurId ? Number(form.utilisateurId) : null,
-        typeRepasId: form.typeRepasId ? Number(form.typeRepasId) : null
-      })
-    });
-    setForm({ nom:"", utilisateurId:"", typeRepasId:"" });
-    await load();
-    alert("Recette créée ✅");
+    try {
+      await api<Recette>("/api/recettes", {
+        method:"POST",
+        body: JSON.stringify({
+          nom: form.nom,
+          utilisateurId: form.utilisateurId ? Number(form.utilisateurId) : null,
+          typeRepasId: form.typeRepasId ? Number(form.typeRepasId) : null
+        })
+      });
+      setForm({ nom:"", utilisateurId:"", typeRepasId:"" });
+      await load();
+      alert("Recette créée ✅");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Erreur inconnue");
+    }
   };
 
   return (

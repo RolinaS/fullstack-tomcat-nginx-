@@ -1,16 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import type { Page, Aliment } from "@/lib/types";
 
-type Aliment = {
-  id:number; nom:string; proteine?:number; lipide?:number; glucide?:number;
-  matiereGrasse?:number; kilocalorie?:number; familleId?:number; familleNom?:string;
+type AlimentForm = {
+  nom: string;
+  proteine: string;
+  lipide: string;
+  glucide: string;
+  matiereGrasse: string;
+  kilocalorie: string;
+  familleId: string;
 };
-type Page<T> = { content: T[] };
 
 export default function AlimentsPage(){
   const [list,setList]=useState<Aliment[]>([]);
-  const [form,setForm]=useState<any>({ nom:"", proteine:"", lipide:"", glucide:"", matiereGrasse:"", kilocalorie:"", familleId:"" });
+  const [form,setForm]=useState<AlimentForm>({ nom:"", proteine:"", lipide:"", glucide:"", matiereGrasse:"", kilocalorie:"", familleId:"" });
   const [loading, setLoading] = useState(true);
 
   const load = async ()=>{
@@ -40,7 +45,9 @@ export default function AlimentsPage(){
       setForm({ nom:"", proteine:"", lipide:"", glucide:"", matiereGrasse:"", kilocalorie:"", familleId:"" });
       await load();
       alert("Aliment créé ✅");
-    } catch(err:any){ alert(err.message); }
+    } catch(err: unknown){
+      alert(err instanceof Error ? err.message : "Erreur inconnue");
+    }
   };
 
   return (

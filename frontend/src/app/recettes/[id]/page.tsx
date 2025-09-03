@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import Link from "next/link";
@@ -8,23 +8,24 @@ type Item = { id:number; recetteId:number; recetteNom:string; alimentId:number; 
 type Aliment = { id:number; nom:string; };
 
 export default function RecetteDetail(){
-  const params = useParams();
-  const recetteId = Number(params?.id);
+  const params = useParams<{ id: string }>();
+  const recetteId = Number(params.id);
   const [items, setItems] = useState<Item[]>([]);
   const [aliments, setAliments] = useState<Aliment[]>([]);
   const [poids, setPoids] = useState<string>("");
   const [alimentId, setAlimentId] = useState<string>("");
 
-  const load = async ()=>{
+  const load = useCallback(async ()=>{
     const list = await api<Item[]>(`/api/recette-aliments?recetteId=${recetteId}`);
     setItems(list);
-  };
-  const loadAliments = async ()=>{
+  }, [recetteId]);
+
+  const loadAliments = useCallback(async ()=>{
     const data = await api<{content: Aliment[]}>("/api/aliments");
     setAliments(data.content);
-  };
+  }, []);
 
-  useEffect(()=>{ load(); loadAliments(); },[recetteId]);
+  useEffect(()=>{ load(); loadAliments(); }, [load, loadAliments]);
 
   const add = async (e:React.FormEvent)=>{
     e.preventDefault();

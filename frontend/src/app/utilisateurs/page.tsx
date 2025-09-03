@@ -1,19 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import type { Page, Utilisateur, Genre } from "@/lib/types";
 
-type Utilisateur = {
-  id: number; prenom: string; nom: string; email: string;
-  genre: "Homme"|"Femme"|"Autre"; taille?: number; poids?: number;
+type UtilisateurForm = {
+  prenom: string;
+  nom: string;
+  email: string;
+  motDePasse: string;
+  genre: Genre;
+  taille: string; // champs de saisie -> string
+  poids: string;
 };
-type Page<T> = { content: T[]; totalElements: number; totalPages: number; number: number; size: number; };
 
 export default function UtilisateursPage() {
   const [list, setList] = useState<Utilisateur[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState<any>({
-    prenom:"", nom:"", email:"", motDePasse:"", genre:"Homme", taille:"", poids:""
+  const [form, setForm] = useState<UtilisateurForm>({
+    prenom: "", nom: "", email: "", motDePasse: "", genre: "Homme", taille: "", poids: ""
   });
+
   const load = async () => {
     setLoading(true);
     try {
@@ -27,17 +33,19 @@ export default function UtilisateursPage() {
     e.preventDefault();
     try {
       await api<Utilisateur>("/api/utilisateurs", {
-        method:"POST",
+        method: "POST",
         body: JSON.stringify({
           ...form,
           taille: form.taille ? Number(form.taille) : null,
           poids: form.poids ? Number(form.poids) : null
         })
       });
-      setForm({ prenom:"", nom:"", email:"", motDePasse:"", genre:"Homme", taille:"", poids:"" });
+      setForm({ prenom: "", nom: "", email: "", motDePasse: "", genre: "Homme", taille: "", poids: "" });
       await load();
       alert("Utilisateur créé ✅");
-    } catch (err:any) { alert(err.message); }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Erreur inconnue");
+    }
   };
 
   return (
@@ -51,7 +59,7 @@ export default function UtilisateursPage() {
           <div><label>Email</label><input type="email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} required/></div>
           <div><label>Mot de passe</label><input type="password" value={form.motDePasse} onChange={e=>setForm({...form, motDePasse:e.target.value})} required/></div>
           <div><label>Genre</label>
-            <select value={form.genre} onChange={e=>setForm({...form, genre:e.target.value})}>
+            <select value={form.genre} onChange={e=>setForm({...form, genre:e.target.value as Genre})}>
               <option>Homme</option><option>Femme</option><option>Autre</option>
             </select>
           </div>
